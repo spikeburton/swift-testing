@@ -1,25 +1,41 @@
 import Testing
 @testable import SwiftTesting
 
-struct SwiftTestingTrait: SuiteTrait, TestScoping {
+struct SwiftTestingSuiteTrait: SuiteTrait, TestScoping {
     func provideScope(for test: Test, testCase: Test.Case?, performing function: () async throws -> Void) async throws {
         guard let name = test.displayName else {
             return
         }
 
-        print("[DEBUG] starting suite: \(name))")
+        print("[DEBUG] before suite: \(name))")
         try await function()
-        print("[DEBUG] finished suite: \(name))")
+        print("[DEBUG] after suite: \(name))")
     }
 }
 
-extension Trait where Self == SwiftTestingTrait {
-    static var swiftTestingTrait: Self { Self() }
+extension Trait where Self == SwiftTestingSuiteTrait {
+    static var swiftTestingSuiteTrait: Self { Self() }
 }
 
-@Suite("Swift Testing Tests", .serialized, .swiftTestingTrait)
+struct SwiftTestingTestTrait: SuiteTrait, TestTrait, TestScoping {
+    // since we apply this to the suite ensure that tests inherit the trait
+    // it does not run before the suite, only before each test
+    let isRecursive: Bool = true
+
+    func provideScope(for test: Test, testCase: Test.Case?, performing function: () async throws -> Void) async throws {
+        print("[DEBUG] before test")
+        try await function()
+        print("[DEBUG] after test")
+    }
+}
+
+extension Trait where Self == SwiftTestingTestTrait {
+    static var swiftTestingTestTrait: Self { Self() }
+}
+
+@Suite("Swift Testing Tests", .serialized, .swiftTestingSuiteTrait)
 final class SwiftTestingTests {
-    @Suite("Child One") class ChildOne {
+    @Suite("Child One", .swiftTestingTestTrait) class ChildOne {
         init() {
             print("[DEBUG] child one init")
         }
