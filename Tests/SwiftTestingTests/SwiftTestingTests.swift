@@ -3,13 +3,11 @@ import Testing
 
 struct SwiftTestingSuiteTrait: SuiteTrait, TestScoping {
     func provideScope(for test: Test, testCase: Test.Case?, performing function: () async throws -> Void) async throws {
-        guard let name = test.displayName else {
-            return
-        }
+        let name = test.displayName ?? test.name
 
-        print("[DEBUG] before suite: \(name))")
+        print("[DEBUG] before suite: \(name)")
         try await function()
-        print("[DEBUG] after suite: \(name))")
+        print("[DEBUG] after suite: \(name)")
     }
 }
 
@@ -23,9 +21,11 @@ struct SwiftTestingTestTrait: SuiteTrait, TestTrait, TestScoping {
     let isRecursive: Bool = true
 
     func provideScope(for test: Test, testCase: Test.Case?, performing function: () async throws -> Void) async throws {
-        print("[DEBUG] before test")
+        let name = test.displayName ?? test.name
+
+        print("[DEBUG] before test: \(name)")
         try await function()
-        print("[DEBUG] after test")
+        print("[DEBUG] after test: \(name)")
     }
 }
 
